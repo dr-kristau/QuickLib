@@ -11,7 +11,8 @@ uses
   Quick.Console,
   Quick.Chrono,
   Quick.Lists,
-  Quick.Linq;
+  Quick.Linq,
+  DFun.List;
 
 type
   TLoginInfo = record
