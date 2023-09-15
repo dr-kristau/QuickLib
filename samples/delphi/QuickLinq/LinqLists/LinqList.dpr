@@ -140,6 +140,23 @@ begin
     if user <> nil then cout('Found by Linq (predicate): %s %s in %s',[user.Name,user.SurName,crono.ElapsedTime],etSuccess)
       else cout('Not found by Linq! (%s)',[crono.ElapsedTime],etError);
 
+    (******************)
+
+       //test search by Linq iteration (predicate)
+    crono.Start;
+
+    //List.FromTEnumerable<TUser>(users2).
+    //user := TLinq.From<TUser>(users2).Where('(Name = ?) OR (SurName = ?)',['Anus','Smith']).OrderBy('Name').SelectFirst;
+    {user := TLinq<TUser>.From(users2).Where(function(aUser : TUser) : Boolean
+      begin
+        Result := aUser.Name = 'Peter';
+      end).SelectFirst;}
+    crono.Stop;
+    if user <> nil then cout('Found by Linq (predicate): %s %s in %s',[user.Name,user.SurName,crono.ElapsedTime],etSuccess)
+      else cout('Not found by Linq! (%s)',[crono.ElapsedTime],etError);
+
+    (******************)
+
     //test search by embeded iteration
     crono.Start;
     user := users2.Get('Name','Peter');
