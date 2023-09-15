@@ -98,6 +98,7 @@ begin
 
       users.Add(user);
       users2.Add(user);
+      users3.Add(user);
     end;
 
     crono := TChronometer.Create;
@@ -132,12 +133,12 @@ begin
     user := TLinq<TUser>.From(users2).Where('Name = ?',['Peter']).SelectFirst;
     crono.Stop;
     if user <> nil then cout('Found by Linq: %s %s in %s',[user.Name,user.SurName,crono.ElapsedTime],etSuccess)
-      else cout('Not found by Linq! (%s)',[crono.ElapsedTime],etError);}
+      else cout('Not found by Linq! (%s)',[crono.ElapsedTime],etError); }
 
     //test search by Linq iteration (predicate)
     crono.Start;
     //user := TLinq.From<TUser>(users2).Where('(Name = ?) OR (SurName = ?)',['Anus','Smith']).OrderBy('Name').SelectFirst;
-    user := TLinq<TUser>.From(users2).Where(function(aUser : TUser) : Boolean
+    user := TLinq<TUser>.From(users3).Where(function(aUser : TUser) : Boolean
       begin
         Result := aUser.Name = 'Peter';
       end).SelectFirst;
@@ -154,7 +155,7 @@ begin
     result:=List.ToTList<TUser>(List.Filter<TUser>(function(aUser : TUser) : Boolean
       begin
         Result := aUser.Name = 'Peter';
-      end, List.FromTEnumerable<TUser>(users2)));
+      end, List.FromTEnumerable<TUser>(users3)));
 
     if result.Count = 1 then
       user:=result.First;
