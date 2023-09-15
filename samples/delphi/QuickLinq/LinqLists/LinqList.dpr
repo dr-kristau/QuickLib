@@ -53,6 +53,7 @@ var
   n : Integer;
   crono : TChronometer;
   login : TLoginInfo;
+  result: IList<TUser>;
 
 begin
   try
@@ -145,14 +146,22 @@ begin
        //test search by Linq iteration (predicate)
     crono.Start;
 
-    //List.FromTEnumerable<TUser>(users2).
+
+    result:=List.Filter<TUser>(function(aUser : TUser) : Boolean
+      begin
+        Result := aUser.Name = 'Peter';
+      end, List.FromTEnumerable<TUser>(users2));
+
+    user:=List.ToTList<TUser>(result).Last;
+
+    //user:=List.Head<TUser>(result).;
     //user := TLinq.From<TUser>(users2).Where('(Name = ?) OR (SurName = ?)',['Anus','Smith']).OrderBy('Name').SelectFirst;
     {user := TLinq<TUser>.From(users2).Where(function(aUser : TUser) : Boolean
       begin
         Result := aUser.Name = 'Peter';
       end).SelectFirst;}
     crono.Stop;
-    if user <> nil then cout('Found by Linq (predicate): %s %s in %s',[user.Name,user.SurName,crono.ElapsedTime],etSuccess)
+    if user <> nil then cout('Found by DFun Linq (predicate): %s %s in %s',[user.Name,user.SurName,crono.ElapsedTime],etSuccess)
       else cout('Not found by Linq! (%s)',[crono.ElapsedTime],etError);
 
     (******************)
