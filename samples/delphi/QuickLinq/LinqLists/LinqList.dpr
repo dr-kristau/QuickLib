@@ -102,7 +102,7 @@ begin
 
     crono := TChronometer.Create;
 
-    //test search by index
+    { //test search by index
     crono.Start;
     user := users.Get('Name','Peter');
     crono.Stop;
@@ -132,7 +132,7 @@ begin
     user := TLinq<TUser>.From(users2).Where('Name = ?',['Peter']).SelectFirst;
     crono.Stop;
     if user <> nil then cout('Found by Linq: %s %s in %s',[user.Name,user.SurName,crono.ElapsedTime],etSuccess)
-      else cout('Not found by Linq! (%s)',[crono.ElapsedTime],etError);
+      else cout('Not found by Linq! (%s)',[crono.ElapsedTime],etError);}
 
     //test search by Linq iteration (predicate)
     crono.Start;
@@ -165,7 +165,7 @@ begin
 
     (******************)
 
-    //test search by embeded iteration
+    {//test search by embeded iteration
     crono.Start;
     user := users2.Get('Name','Peter');
     crono.Stop;
@@ -213,7 +213,7 @@ begin
       Inc(n);
       cout('Login.Username: %d. %s %s',[n,user.Name,user.SurName],etSuccess);
     end;
-    if user = nil then cout('Not found by Linq!',etError);
+    if user = nil then cout('Not found by Linq!',etError);}
 
     cout('Press a key to Exit',etInfo);
     Readln;
