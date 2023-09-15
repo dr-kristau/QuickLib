@@ -48,12 +48,13 @@ const
 var
   users : TIndexedObjectList<TUser>;
   users2 : TSearchObjectList<TUser>;
+  users3 : TObjectList<TUser>;
   user : TUser;
   i : Integer;
   n : Integer;
   crono : TChronometer;
   login : TLoginInfo;
-  result: IList<TUser>;
+  result: TList<TUser>;
 
 begin
   try
@@ -66,6 +67,8 @@ begin
 
     users2 := TSearchObjectList<TUser>.Create(False);
 
+    users3:= TObjectList<TUser>.Create;
+
     cout('Generating list...',etInfo);
     //generate first dummy entries
     for i := 1 to numusers - high(UserNames) do
@@ -77,6 +80,7 @@ begin
       user.Age := 18 + Random(20);
       users.Add(user);
       users2.Add(user);
+      users3.Add(user);
     end;
 
     //generate real entries to search
@@ -143,23 +147,18 @@ begin
 
     (******************)
 
-       //test search by Linq iteration (predicate)
+    user := nil;
+       //test search by DFun Linq iteration (predicate)
     crono.Start;
 
-
-    result:=List.Filter<TUser>(function(aUser : TUser) : Boolean
+    result:=List.ToTList<TUser>(List.Filter<TUser>(function(aUser : TUser) : Boolean
       begin
         Result := aUser.Name = 'Peter';
-      end, List.FromTEnumerable<TUser>(users2));
+      end, List.FromTEnumerable<TUser>(users2)));
 
-    user:=List.ToTList<TUser>(result).Last;
+    if result.Count = 1 then
+      user:=result.First;
 
-    //user:=List.Head<TUser>(result).;
-    //user := TLinq.From<TUser>(users2).Where('(Name = ?) OR (SurName = ?)',['Anus','Smith']).OrderBy('Name').SelectFirst;
-    {user := TLinq<TUser>.From(users2).Where(function(aUser : TUser) : Boolean
-      begin
-        Result := aUser.Name = 'Peter';
-      end).SelectFirst;}
     crono.Stop;
     if user <> nil then cout('Found by DFun Linq (predicate): %s %s in %s',[user.Name,user.SurName,crono.ElapsedTime],etSuccess)
       else cout('Not found by Linq! (%s)',[crono.ElapsedTime],etError);
