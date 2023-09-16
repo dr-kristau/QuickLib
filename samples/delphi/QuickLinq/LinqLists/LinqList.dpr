@@ -12,6 +12,8 @@ uses
   Quick.Chrono,
   Quick.Lists,
   Quick.Linq,
+  Quick.Arrays,
+  Math,
   DFun.List;
 
 type
@@ -55,6 +57,8 @@ var
   crono : TChronometer;
   login : TLoginInfo;
   result: TList<TUser>;
+  users_list: TXArray<TUser>;
+  users_list1: TList<TUser>;
 
 begin
   try
@@ -157,7 +161,7 @@ begin
         Result := aUser.Name = 'Peter';
       end, List.FromTEnumerable<TUser>(users3)));
 
-    if result.Count = 1 then
+    if result.Count > 0 then
       user:=result.First;
 
     crono.Stop;
@@ -191,11 +195,12 @@ begin
         cout('%d. %s %s',[n,user.Name,user.SurName],etSuccess)
       end;
     end;
-    if user = nil then cout('Not found by Iteration!',etError);
+    if user = nil then cout('Not found by Iteration!',etError); }
 
     //test search by Linq iteration
     user := nil;
-    n := 0;
+    n:=0;
+    crono.Start;
     cout('Found by Linq:',etInfo);
     //TLinq<TUser>.From(users2).Where('Name Like ?',['p%']).Delete;
 
@@ -207,14 +212,70 @@ begin
     //for user in TLinq<TUser>.From(users2).Where('SurName Like ?',['%son']).Select do
     //for user in TLinq<TUser>.From(users2).Where('SurName Like ?',['p%']).Select do
     //for user in TLinq<TUser>.From(users2).Where('1 = 1',[]).Select do
-    for user in TLinq<TUser>.From(users2).Where('(LoginInfo.UserName Like ?) OR (LoginInfo.UserName Like ?)',['p%','a%'])
+
+    users_list:=TLinq<TUser>.From(users2).Where('(LoginInfo.UserName Like ?) OR (LoginInfo.UserName Like ?)',['p%','a%'])
                                          .OrderBy('Name')
-                                         .Select do
+                                         .Select;
+    crono.Stop;
+
+    for user in users_list do
     begin
       Inc(n);
-      cout('Login.Username: %d. %s %s',[n,user.Name,user.SurName],etSuccess);
+      cout('Login.Username: %d. %s %s in %s',[n,user.Name,user.SurName,crono.ElapsedTime],etSuccess);
     end;
-    if user = nil then cout('Not found by Linq!',etError);}
+    if user = nil then cout('Not found by Linq!',etError);
+
+
+    (**********************)
+    user := nil;
+    n:=0;
+    crono.Start;
+    cout('Found by DFun Linq:',etInfo);
+    //TLinq<TUser>.From(users2).Where('Name Like ?',['p%']).Delete;
+
+    //TLinq<TUser>.From(users2).Where('Name = ?',['Peter']).Update(['Name'],['Poter']);
+
+    //for user in TLinq<TUser>.From(users2).Where('(Name = ?) OR (SurName = ?) OR (SurName = ?)',['Peter','Smith','Huan']).Select do
+    //for user in TLinq<TUser>.From(users2).Where('(Name = ?) OR (Age > ?) OR (SurName = ?)',['Anna',30,'Smith']).Select do
+    //for user in TLinq<TUser>.From(users2).Where('Age > ?',[18]).Select do
+    //for user in TLinq<TUser>.From(users2).Where('SurName Like ?',['%son']).Select do
+    //for user in TLinq<TUser>.From(users2).Where('SurName Like ?',['p%']).Select do
+    //for user in TLinq<TUser>.From(users2).Where('1 = 1',[]).Select do
+
+    users_list1:= List.ToTList<TUser>(
+        List.SortBy<TUser>(
+        function(L, R: TUser): Integer
+          var
+            length:Integer;
+          begin
+            length:=Min(L.Name.Length, R.Name.Length);
+            if  (length > 0) and (Ord(L.Name[1]) - Ord(R.Name[1]) < 0) then
+              Result:=-1
+            else if (length > 0) and (Ord(L.Name[1]) - Ord(R.Name[1]) > 0) then
+              Result:=1
+            else if (length > 1) and (Ord(L.Name[2]) - Ord(R.Name[2]) < 0) then
+              Result:=-1
+            else if (length > 1) and (Ord(L.Name[2]) - Ord(R.Name[2]) > 0) then
+              Result:=1
+            else
+              Result:=0;
+          end,
+          List.Filter<TUser>(
+          function(aUser : TUser) : Boolean
+          begin
+            Result := aUser.LoginInfo.Username.StartsWith('P') or aUser.LoginInfo.Username.StartsWith('A');
+          end,
+          List.FromTEnumerable<TUser>(users3))));
+
+    crono.Stop;
+
+    for user in users_list1 do
+    begin
+      Inc(n);
+      cout('Login.Username: %d. %s %s in %s',[n,user.Name,user.SurName,crono.ElapsedTime],etSuccess);
+    end;
+    if user = nil then cout('Not found by Linq!',etError);
+    (**********************)
 
     cout('Press a key to Exit',etInfo);
     Readln;
