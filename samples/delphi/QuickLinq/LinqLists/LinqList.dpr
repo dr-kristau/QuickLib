@@ -38,6 +38,30 @@ type
     property LoginInfo : TLoginInfo read fLoginInfo write fLoginInfo;
   end;
 
+  function Sort(L, R: TUser) : Integer;
+  var
+    length, n:Integer;
+
+    function SortChar(A, B: Char) : Integer;
+    begin
+      if Ord(A) - Ord(B) < 0 then
+        Result:=-1
+      else if Ord(A) - Ord(B) > 0 then
+        Result:=1
+      else
+        Result:=0;
+    end;
+  begin
+    length:=Min(L.Name.Length, R.Name.Length);
+    n:=1;
+    while n < length do
+    begin
+       Result:=SortChar(L.Name[n], R.Name[n]);
+       Inc(n);
+       if Result <> 0 then exit;
+    end;
+  end;
+
 
 const
   numusers = 100000;
@@ -244,22 +268,7 @@ begin
 
     users_list1:= List.ToTList<TUser>(
         List.SortBy<TUser>(
-        function(L, R: TUser): Integer
-          var
-            length:Integer;
-          begin
-            length:=Min(L.Name.Length, R.Name.Length);
-            if  (length > 0) and (Ord(L.Name[1]) - Ord(R.Name[1]) < 0) then
-              Result:=-1
-            else if (length > 0) and (Ord(L.Name[1]) - Ord(R.Name[1]) > 0) then
-              Result:=1
-            else if (length > 1) and (Ord(L.Name[2]) - Ord(R.Name[2]) < 0) then
-              Result:=-1
-            else if (length > 1) and (Ord(L.Name[2]) - Ord(R.Name[2]) > 0) then
-              Result:=1
-            else
-              Result:=0;
-          end,
+          Sort,
           List.Filter<TUser>(
           function(aUser : TUser) : Boolean
           begin
