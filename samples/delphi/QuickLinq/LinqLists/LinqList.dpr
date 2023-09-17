@@ -5,6 +5,7 @@ program LinqList;
 {$R *.res}
 
 uses
+  Classes,
   System.SysUtils,
   System.Generics.Collections,
   Quick.Commons,
@@ -14,6 +15,7 @@ uses
   Quick.Linq,
   Quick.Arrays,
   Math,
+  Quick.Json.Serializer,
   DFun.List;
 
 type
@@ -83,6 +85,8 @@ var
   result: TList<TUser>;
   users_list: TXArray<TUser>;
   users_list1: TList<TUser>;
+  serializer : TJsonSerializer;
+  ss : TStringStream;
 
 begin
   try
@@ -127,6 +131,22 @@ begin
       users.Add(user);
       users2.Add(user);
       users3.Add(user);
+    end;
+
+    ss := TStringStream.Create;
+    try
+      serializer := TJsonSerializer.Create(TSerializeLevel.slPublicProperty,True);
+      try
+        serializer.ObjectToJsonStream(user,ss);
+        cout(ss.DataString,ccWhite);
+
+        serializer.JsonStreamToObject(user,ss);
+        cout(user.Name,ccWhite);
+      finally
+        serializer.Free;
+      end;
+    finally
+      ss.Free;
     end;
 
     crono := TChronometer.Create;
@@ -224,11 +244,11 @@ begin
     //test search by Linq iteration
     user := nil;
     n:=0;
-    crono.Start;
     cout('Found by Linq:',etInfo);
+    crono.Start;
     //TLinq<TUser>.From(users2).Where('Name Like ?',['p%']).Delete;
 
-    TLinq<TUser>.From(users2).Where('Name = ?',['Peter']).Update(['Name'],['Poter']);
+    //TLinq<TUser>.From(users2).Where('Name = ?',['Peter']).Update(['Name'],['Poter']);
 
     //for user in TLinq<TUser>.From(users2).Where('(Name = ?) OR (SurName = ?) OR (SurName = ?)',['Peter','Smith','Huan']).Select do
     //for user in TLinq<TUser>.From(users2).Where('(Name = ?) OR (Age > ?) OR (SurName = ?)',['Anna',30,'Smith']).Select do
@@ -237,7 +257,7 @@ begin
     //for user in TLinq<TUser>.From(users2).Where('SurName Like ?',['p%']).Select do
     //for user in TLinq<TUser>.From(users2).Where('1 = 1',[]).Select do
 
-    users_list:=TLinq<TUser>.From(users2).Where('(LoginInfo.UserName Like ?) OR (LoginInfo.UserName Like ?)',['p%','a%'])
+    users_list:=TLinq<TUser>.From(users2).Where('(LoginInfo.UserName Like ?) OR (LoginInfo.UserName Like ?) OR (LoginInfo.UserName Like ?)',['p%','a%','m%'])
                                          .OrderBy('Name')
                                          .Select;
     crono.Stop;
@@ -253,8 +273,8 @@ begin
     (**********************)
     user := nil;
     n:=0;
-    crono.Start;
     cout('Found by DFun Linq:',etInfo);
+    crono.Start;
     //TLinq<TUser>.From(users2).Where('Name Like ?',['p%']).Delete;
 
     //TLinq<TUser>.From(users2).Where('Name = ?',['Peter']).Update(['Name'],['Poter']);
@@ -272,7 +292,7 @@ begin
           List.Filter<TUser>(
           function(aUser : TUser) : Boolean
           begin
-            Result := aUser.LoginInfo.Username.StartsWith('P') or aUser.LoginInfo.Username.StartsWith('A');
+            Result := aUser.LoginInfo.Username.StartsWith('P') or aUser.LoginInfo.Username.StartsWith('A') or aUser.LoginInfo.Username.StartsWith('M');
           end,
           List.FromTEnumerable<TUser>(users3))));
 
@@ -290,6 +310,7 @@ begin
     Readln;
     users.Free;
     users2.Free;
+    users_list1.Free;
     crono.Free;
   except
     on E: Exception do
